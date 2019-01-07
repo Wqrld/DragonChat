@@ -1,0 +1,10 @@
+name: DragonChat
+version: 1.0.0
+author: Wqrld
+main: ga.imluc.dragonchat.Main
+api-version: 1.12
+softdepend: [Factions]
+commands:
+   dchat:
+      description: dchat main command
+      usage: /dchat

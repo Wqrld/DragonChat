@@ -1,0 +1,6 @@
+#DO NOT TOUCH!
+test: true
+
+
+#Format, supports placeholderapi, replaces [Faction] with your faction if you are using savagefactions or factionsuuid.
+format: "&8[[Faction]&8] &8[&7%vault_prefix% &r&8] &7%player_name%: &f"
