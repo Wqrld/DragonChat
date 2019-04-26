@@ -6,6 +6,7 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -16,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.EventHandler;
 
@@ -23,8 +25,10 @@ import java.awt.*;
 import java.io.File;
 
 
-public class Main extends JavaPlugin implements Listener {
 
+
+public class Main extends JavaPlugin implements Listener {
+    private static Permission perms = null;
     public static Main plugin;
 
 
@@ -53,16 +57,28 @@ public FileConfiguration getconfig(){
 
     @Override
     public void onEnable() {
+
+
+
         //Fired when the server enables the plugin
         getServer().getPluginManager().registerEvents(this, this);
         Bukkit.getConsoleSender().sendMessage("&8[&eDragonchat&8]&e - loaded");
         createConfig();
         this.getCommand("dchat").setExecutor(new Dchat());
+
+        if(isPluginAvailable("Vault")) {
+
+            setupPermissions();
+        }else{
+            Bukkit.getConsoleSender().sendMessage("&8[&eDragonchat&8]&e - this plugin requires vault to detect roles and chatcolors");
+        }
+
     }
 
     @Override
     public void onDisable() {
         //Fired when the server stops and disables all plugins
+
     }
 
 
@@ -82,7 +98,7 @@ public FileConfiguration getconfig(){
             } else {
                 getLogger().info("Config.yml found, loading!");
                 fileConfiguration = YamlConfiguration.loadConfiguration(file);
-                Bukkit.getConsoleSender().sendMessage("&8[&eDragonchat8]&e - " + this.getConfig().getString("test"));
+                Bukkit.getConsoleSender().sendMessage("&8[&eDragonchat8]&e - " + this.getConfig().getString("test.test"));
 
             }
         } catch (Exception e) {
@@ -93,12 +109,19 @@ public FileConfiguration getconfig(){
     }
 
 
+    private boolean setupPermissions() {
+        RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
+        perms = rsp.getProvider();
+        return perms != null;
+    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(AsyncPlayerChatEvent event) {
+
         if (event.isCancelled()) {
             return;
         }
+
         Player player = event.getPlayer();
 
        // String oldformat = "&8[[Faction]&8] &8[&7%vault_prefix%&r&8] &7%player_name%: &f" + event.getMessage();
@@ -107,12 +130,32 @@ public FileConfiguration getconfig(){
 
 
 
-        Bukkit.getConsoleSender().sendMessage("&8[&eDragonchat8]&e - " + config.getString("format"));
+      //  Bukkit.getConsoleSender().sendMessage("&8[&eDragonchat8]&e - " + config.getString("format"));
 
-        String oldformat = config.getString("format").replace("%", "%") + event.getMessage();
-        String format = PlaceholderAPI.setPlaceholders(event.getPlayer(), ChatColor.translateAlternateColorCodes('&', oldformat));
-        Bukkit.getConsoleSender().sendMessage("&8[&eDragonchat8]&e - " + format + "\n" + config.getString("format") + "\nThatwasit");
+        String format = config.getString("format").replace("%", "%") + event.getMessage();
+        format = PlaceholderAPI.setPlaceholders(event.getPlayer(), ChatColor.translateAlternateColorCodes('&', format));
+
+        if(isPluginAvailable("Vault")) {
+            String chatcolor = config.getString("color." + perms.getPrimaryGroup(player));
+            if (chatcolor == null) {
+                chatcolor = config.getString("defaultcolor");
+            }
+            format = format.replace("[chatcolor]", ChatColor.translateAlternateColorCodes('&', chatcolor));
+        }
+
+
+
+
+
+        format = format.replace("[username]", player.getName());
         format = format.replace("%§", "%%§");
+if(format.contains("[item]")) {
+    format = format.replace("[item]", "§e§l" + event.getPlayer().getItemInHand().getType().name() + " (" + event.getPlayer().getItemInHand().getAmount() + ")");
+}
+        Bukkit.getConsoleSender().sendMessage("§8[§eDragonchat§8]§e - " + format);
+
+
+
 
         //.replace("&", "§");
         event.setFormat(format);
@@ -124,7 +167,6 @@ public FileConfiguration getconfig(){
 //TextComponent it = new TextComponent( "§e§l" + event.getPlayer().getItemInHand().getI18NDisplayName() + " (" + event.getPlayer().getItemInHand().getAmount() + ")" );
 //it.setHoverEvent(new HoverEvent( HoverEvent.Action.SHOW_TEXT, new ComponentBuilder( event.getPlayer().getItemInHand().getItemMeta().getDisplayName() ).create()));
 //TextComponent form = new TextComponent(oldformat)
-        format = format.replace("[holding]", "§e§l" + event.getPlayer().getItemInHand().getI18NDisplayName() + " (" + event.getPlayer().getItemInHand().getAmount() + ")");
 
         if(isPluginAvailable("Factions")) {
         event.setCancelled(true);
