@@ -1,14 +1,18 @@
-#DO NOT TOUCH!
-test: true
-
-
 #Format, supports placeholderapi, replaces [Faction] with your faction if you are using savagefactions or factionsuuid.
 
 #variables:
-#[Faction]
+#[faction]
 #[chatcolor]
 #[username]
-format: "[Faction]&r %vault_prefix% &7%player_name%&7: &r"
+#[prefix]
 
+#Any PlaceholderAPI veriable for example %player_name%
+
+format: "[faction]&r[prefix]&r &7[username]&7: &r[chatcolor][message]"
+
+#Colors for [chatcolor]
 color:
-  Wqrld: "dsa"
+  owner: "&b"
+
+#Default chatcolor used in [chatcolor]
+defaultcolor: "&f"

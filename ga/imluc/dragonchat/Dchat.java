@@ -20,9 +20,10 @@ public class Dchat implements CommandExecutor {
             }
 
             if (args[0].equalsIgnoreCase("reload")) {
-                sender.sendMessage(Main.plugin.getConfig().getString("test"));
-                player.sendMessage("config reloaded");
 
+                Main.plugin.reloadConfig();
+                player.sendMessage("config reloaded");
+                sender.sendMessage(Main.plugin.getConfig().getString("test"));
             }
 
         }
